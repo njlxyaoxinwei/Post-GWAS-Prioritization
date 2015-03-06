@@ -16,6 +16,8 @@ class Genome:
 	def __str__(self):
 		return "{0}:{1}:{2}".format(self.chrom, self.loc, self.value)
 
+# Check if the array is well-formed
+# Need to check if coordinate is out-of-bounds too
 def validate(arr):
 	if len(arr)!=3:
 		return False
@@ -74,13 +76,13 @@ for chrom, group in groupby(gwas_data, key=lambda g: g.chrom):
 	canyon_data.extend(map(Decimal, res.json()))
 pbar.finish()
 
-gwas_data = map(lambda g: g.value, gwas_data)
+gwas_value = map(lambda g: g.value, gwas_data)
 
 
-### Computation
+### Computation Starts Here with gwas_value and canyon_data
 print("Writing Result to File...")
 with open(args.o,'w') as output_file:
-	for data1, data2 in zip(gwas_data,canyon_data):
+	for data1, data2 in zip(gwas_value,canyon_data):
 		output_file.write("{0}\t{1}\n".format(data1,data2))
 
 
