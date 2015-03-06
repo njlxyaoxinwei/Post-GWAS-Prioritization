@@ -20,9 +20,10 @@ def validate(arr):
 	else:
 		return True
 
-
+### CONSTANTS
 CANYON_API="http://localhost:3000/genome"
 
+### Parsing Command Line Options
 parser = argparse.ArgumentParser(description='Post-GWAS Prioritization')
 parser.add_argument("gwas", metavar='GWAS_DATA_PATH', 
 	                          type=argparse.FileType('r'), 
@@ -39,6 +40,7 @@ if args.t<=0 or args.t>=1:
 	print("Prioritize: Invalid Threshold. Range should be (0,1)")
 	sys.exit(1)
 
+### Reading GWAS Data
 data_file = args.gwas
 gwas_data = []
 for line in data_file:
@@ -50,17 +52,18 @@ for line in data_file:
 		gwas_data.append(Genome(int(base[0]), int(base[1]), Decimal(base[2])))
 data_file.close()
 
+### Downloading Canyon Data
 gwas_data.sort(key=lambda g: (g.chrom, g.loc))
-
 canyon_data = []
 for chrom, group in groupby(gwas_data, key=lambda g: g.chrom):
-	locs = list(map(lambda g: (g.loc), group))
+	locs = map(lambda g: (g.loc), group)
 	res = requests.post(CANYON_API, timeout=100,
 		                  data={'chrom':chrom, 'locs[]': locs})
 	canyon_data.extend(map(Decimal, res.json()))
-
 gwas_data = map(lambda g: g.value, gwas_data)
 
+
+### 
 with open(args.o,'w') as output_file:
 	for data1, data2 in zip(gwas_data,canyon_data):
 		output_file.write("{0}\t{1}\n".format(data1,data2))
