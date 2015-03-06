@@ -51,17 +51,19 @@ for line in data_file:
 data_file.close()
 
 gwas_data.sort(key=lambda g: (g.chrom, g.loc))
-canyon_data = []
 
+canyon_data = []
 for chrom, group in groupby(gwas_data, key=lambda g: g.chrom):
 	locs = list(map(lambda g: (g.loc), group))
 	res = requests.post(CANYON_API, timeout=100,
 		                  data={'chrom':chrom, 'locs[]': locs})
-	canyon_data.extend(res.json())
+	canyon_data.extend(map(Decimal, res.json()))
+
+gwas_data = map(lambda g: g.value, gwas_data)
 
 with open(args.o,'w') as output_file:
-	for data in canyon_data:
-		output_file.write("{0}\n".format(data))
+	for data1, data2 in zip(gwas_data,canyon_data):
+		output_file.write("{0}\t{1}\n".format(data1,data2))
 
 
 
