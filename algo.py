@@ -3,6 +3,7 @@ import numpy as np
 from scipy import special
 from progressbar import *
 from decimal import *
+
 ###function needed
 def cv_hist_fun(x,k):
 	#use cross validation, give the best bin numbers for histogram
@@ -47,9 +48,7 @@ def Get_Density_NHWnon(Input, Density_NHW_non, mbest):
 	#numpy.ndarray Density_NHW_non: estimated density of non-functional p value from histogram
 	#float mbest: the best number of bins for histogram from cross validation
 	#numpy.ndarray Output: the estimated density at Input
-	Index = np.empty_like(Input, dtype=int)
-	np.ceil(Input*mbest, Index)
-	Index = Index - 1
+	Index = Get_Bin(Input, mbest)
 	#Index = np.array(list(map(math.ceil,Input*mbest)),dtype=int) - 1
 	Output = Density_NHW_non[Index]
 	return Output
@@ -74,8 +73,9 @@ def histogram(data, nbins):
 	hist = np.zeros(nbins, dtype=int)
 	for index in indeces:
 		hist[index]+=1
-	hist = hist*nbins/len(data)
-	return hist
+	result = np.empty(nbins, dtype=np.float64)
+	np.divide(hist*nbins, len(data), result)
+	return result
 
 def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	#calculating the posterior score
@@ -90,8 +90,8 @@ def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	Pvalue_NHW_func = data1[data2 > thd]  
 	Pvalue_NHW_non = data1[data2 <= thd]
 	bin_num = cv_hist_fun(Pvalue_NHW_non, cv)['mbest']   ### 949 (under constraint < 1000)
-	Breaks = np.linspace(0,1,bin_num+1, dtype=np.float64)
 	Density_NHW_non = histogram(Pvalue_NHW_non, bin_num)
+
 	###   EM   ###
 	Theta = np.array([0.01, 0.5], dtype=np.float64)
 	Theta_Trace = []
