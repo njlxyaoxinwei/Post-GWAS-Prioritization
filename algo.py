@@ -3,6 +3,7 @@ import numpy as np
 from scipy import special
 from progressbar import *
 from datetime import datetime
+
 ###function needed
 def cv_hist_fun(x,k):
 	#use cross validation, give the best bin numbers for histogram
@@ -106,17 +107,24 @@ Chr_NHW = []
 Pos_NHW = []
 Pvalue_NHW = []
 GenoCanyon_10K_NHW = []
-with open('/Users/huyiming/Desktop/courses spring 2015/post.GWAS.prioritize/CD_phs000130.pha002847.txt','r') as dat:
-	for eachline in dat:
-		each = eachline.split('\t')
-		if each[3] != '':
-			rs.append(each[0])
-			Chr_NHW.append(each[2])
-			Pos_NHW.append(each[3])
-			Pvalue_NHW.append(float(each[1]))
 
-with open('/Users/huyiming/Desktop/courses spring 2015/post.GWAS.prioritize/GenoCanyon_CD_NIDDK.txt','r') as dat1:
-	for eachline in dat1:
+with open('/home/dydyd/test/GenoCanyonData/test1/Pvalue','r') as dat:
+	for eachline in dat:
+		each = eachline.split('\n')
+		Pvalue_NHW.append(float(each[0]))
+
+with open('/home/dydyd/test/GenoCanyonData/test1/Pos','r') as dat:
+	for eachline in dat:
+		each = eachline.split('\n')
+		Pos_NHW.append(each[0])
+
+with open('/home/dydyd/test/GenoCanyonData/test1/Chr','r') as dat:
+	for eachline in dat:
+		each = eachline.split('\n')
+		Chr_NHW.append(each[0])
+
+with open('/home/dydyd/test/GenoCanyonData/test1/GenoCanyon','r') as dat:
+	for eachline in dat:
 		each = eachline.split('\n')
 		GenoCanyon_10K_NHW.append(float(each[0]))
 
@@ -135,7 +143,7 @@ for i in range(n):
 	output.append(rs[i]+'\t'+Chr_NHW[i]+'\t'+Pos_NHW[i]+'\t'+str(Pvalue_NHW[i])+'\t'+str(res[i])+'\n')
 
 
-with open('/Users/huyiming/Desktop/courses spring 2015/post.GWAS.prioritize/dat.txt','w') as outfile:
+with open('result.data','w') as outfile:
 	outfile.writelines(output)
 
 
