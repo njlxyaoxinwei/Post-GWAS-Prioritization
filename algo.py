@@ -34,6 +34,12 @@ def cv_hist_fun(x,k):
 	mbest = (b-a)/hbest   ###optimal number of bins
 	return {'risk':risk,'nbins':nbins,'h':h,'mbest':mbest}
 
+def Get_Bin(Input, nbins):
+	index = np.empty_like(Input, dtype=int)
+	np.ceil(Input*nbins, index)
+	index = index - 1
+	return index
+
 
 def Get_Density_NHWnon(Input, Density_NHW_non, mbest):
 	#calculate the estimated density of p value of non-functional loci
@@ -63,6 +69,14 @@ def Conditional_Exp_NHW(data, theta, Density_NHW_non, mbest):
 	return result
 
 
+def histogram(data, nbins):
+	indeces = Get_Bin(data, nbins)
+	hist = np.zeros(nbins, dtype=int)
+	for index in indeces:
+		hist[index]+=1
+	hist = hist*nbins/len(data)
+	return hist
+
 def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	#calculating the posterior score
 	#numpy.ndarray data1: GWAS pvalue
@@ -76,13 +90,8 @@ def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	Pvalue_NHW_func = data1[data2 > thd]  
 	Pvalue_NHW_non = data1[data2 <= thd]
 	bin_num = cv_hist_fun(Pvalue_NHW_non, cv)['mbest']   ### 949 (under constraint < 1000)
-	Breaks = np.linspace(0,1,bin_num+1)
-	h_NHW = np.histogram(Pvalue_NHW_non,bins=Breaks,density=True)
-	Density_NHW_non = h_NHW[0]
-	with open('result_hist.data', 'w') as outfile:
-		for d in Density_NHW_non:
-			outfile.write(str(d)+'\n')
-	exit(0)
+	Breaks = np.linspace(0,1,bin_num+1, dtype=np.float64)
+	Density_NHW_non = histogram(Pvalue_NHW_non, bin_num)
 	###   EM   ###
 	Theta = np.array([0.01, 0.5], dtype=np.float64)
 	Theta_Trace = []
@@ -151,10 +160,10 @@ for i in range(n):
 
 with open('result.data','w') as outfile:
 	outfile.writelines(output)
-with open('result_theta','w') as outfile:
-	trace = results["Trace"]
-	for vector in trace:
-		outfile.write(str(vector[0])+'\t'+str(vector[1])+'\n')
+# with open('result_theta','w') as outfile:
+# 	trace = results["Trace"]
+# 	for vector in trace:
+# 		outfile.write(str(vector[0])+'\t'+str(vector[1])+'\n')
 
 
 
