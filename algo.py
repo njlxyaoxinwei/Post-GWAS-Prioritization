@@ -2,8 +2,7 @@ from __future__ import division
 import numpy as np
 from scipy import special
 from progressbar import *
-from datetime import datetime
-
+from decimal import *
 ###function needed
 def cv_hist_fun(x,k):
 	#use cross validation, give the best bin numbers for histogram
@@ -42,7 +41,10 @@ def Get_Density_NHWnon(Input, Density_NHW_non, mbest):
 	#numpy.ndarray Density_NHW_non: estimated density of non-functional p value from histogram
 	#float mbest: the best number of bins for histogram from cross validation
 	#numpy.ndarray Output: the estimated density at Input
-	Index = np.array(map(math.ceil,Input*mbest),dtype=int) - 1
+	Index = np.empty_like(Input, dtype=int)
+	np.ceil(Input*mbest, Index)
+	Index = Index - 1
+	#Index = np.array(list(map(math.ceil,Input*mbest)),dtype=int) - 1
 	Output = Density_NHW_non[Index]
 	return Output
 
@@ -54,7 +56,8 @@ def Conditional_Exp_NHW(data, theta, Density_NHW_non, mbest):
 	#numpy.ndarray Density_NHW_non: estimated density of non-functional p value from histogram
 	#float mbest: the best number of bins for histogram from cross validation
 	#numpy.ndarray result: conditional probility of being functional given the GWAS p value
-	part1 = (data**(theta[1]-1))/special.beta(theta[1], 1)
+	#part1 = (data**(theta[1]-1))/special.beta(theta[1], 1)
+	part1 = np.power(data, (theta[1]-1))/special.beta(theta[1],1)
 	part2 = Get_Density_NHWnon(data, Density_NHW_non, mbest)
 	result = theta[0]*part1/(theta[0]*part1 + (1-theta[0])*part2)
 	return result
@@ -76,14 +79,18 @@ def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	Breaks = np.linspace(0,1,bin_num+1)
 	h_NHW = np.histogram(Pvalue_NHW_non,bins=Breaks,density=True)
 	Density_NHW_non = h_NHW[0]
+	with open('result_hist.data', 'w') as outfile:
+		for d in Density_NHW_non:
+			outfile.write(str(d)+'\n')
+	exit(0)
 	###   EM   ###
-	Theta = np.array([0.01, 0.5])
-	Update = np.array([0.,0.])
+	Theta = np.array([0.01, 0.5], dtype=np.float64)
 	Theta_Trace = []
 	widgets = ['EM: ', Percentage(), ' ', Bar(marker=RotatingMarker()),' ', ETA()]
 	pbar = ProgressBar(widgets=widgets, maxval=ite).start()
 	for j in range(ite):
 		T1 = Conditional_Exp_NHW(Pvalue_NHW_func, Theta, Density_NHW_non, bin_num)
+		Update = np.empty(2, dtype=np.float64)
 		Update[0] = np.mean(T1)
 		Update[1] = Update[0]/np.mean(T1*(-np.log(Pvalue_NHW_func)))
 		Theta = Update
@@ -92,7 +99,7 @@ def post_GWAS_posterior(data1, data2, thd, cv, ite):
 	
 	pbar.finish()
 	###   Calculate the Posterior   ###
-	part1 = (data1**(Theta[1]-1))/special.beta(Theta[1], 1)
+	part1 = np.power(data1, (Theta[1]-1))/special.beta(Theta[1], 1)
 	part2 = Get_Density_NHWnon(data1,Density_NHW_non,bin_num)
 	Prior = Theta[0]*data2
 	Posterior = Prior*part1/(Prior*part1 + (1-Prior)*part2)
@@ -102,7 +109,6 @@ def post_GWAS_posterior(data1, data2, thd, cv, ite):
 
 ##############test example##############
 ###read in data
-rs = [] #SNP ID
 Chr_NHW = []
 Pos_NHW = []
 Pvalue_NHW = []
@@ -111,7 +117,7 @@ GenoCanyon_10K_NHW = []
 with open('/home/dydyd/test/GenoCanyonData/test1/Pvalue','r') as dat:
 	for eachline in dat:
 		each = eachline.split('\n')
-		Pvalue_NHW.append(float(each[0]))
+		Pvalue_NHW.append(Decimal(each[0]))
 
 with open('/home/dydyd/test/GenoCanyonData/test1/Pos','r') as dat:
 	for eachline in dat:
@@ -126,25 +132,29 @@ with open('/home/dydyd/test/GenoCanyonData/test1/Chr','r') as dat:
 with open('/home/dydyd/test/GenoCanyonData/test1/GenoCanyon','r') as dat:
 	for eachline in dat:
 		each = eachline.split('\n')
-		GenoCanyon_10K_NHW.append(float(each[0]))
+		GenoCanyon_10K_NHW.append(Decimal(each[0]))
 
 
 #Chr_NHW = np.array(Chr_NHW)
 #Pos_NHW = np.array(Pos_NHW)
-Pvalue_NHW = np.array(Pvalue_NHW)
-GenoCanyon_10K_NHW = np.array(GenoCanyon_10K_NHW)
+Pvalue_NHW = np.array(Pvalue_NHW, dtype=np.float64)
+GenoCanyon_10K_NHW = np.array(GenoCanyon_10K_NHW, dtype=np.float64)
 
 results = post_GWAS_posterior(data1 = Pvalue_NHW, data2 = GenoCanyon_10K_NHW, thd = 0.1, cv = 100, ite = 5000)
 
 res = results['Post']
 n = len(Chr_NHW)
-output = ['SNP.ID'+'\t'+'Chr.ID'+'\t'+'Chr.Position'+'\t'+'P.value'+'\t'+'Posterior'+'\n']
+output = ['Chr.ID'+'\t'+'Chr.Position'+'\t'+'P.value'+'\t'+'Posterior'+'\n']
 for i in range(n):
-	output.append(rs[i]+'\t'+Chr_NHW[i]+'\t'+Pos_NHW[i]+'\t'+str(Pvalue_NHW[i])+'\t'+str(res[i])+'\n')
+	output.append(Chr_NHW[i]+'\t'+Pos_NHW[i]+'\t'+str(Pvalue_NHW[i])+'\t'+str(res[i])+'\n')
 
 
 with open('result.data','w') as outfile:
 	outfile.writelines(output)
+with open('result_theta','w') as outfile:
+	trace = results["Trace"]
+	for vector in trace:
+		outfile.write(str(vector[0])+'\t'+str(vector[1])+'\n')
 
 
 
