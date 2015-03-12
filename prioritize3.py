@@ -5,6 +5,7 @@ import sys
 import time
 import requests
 import numpy as np
+from scipy import special
 from itertools import groupby
 from decimal import *
 from progressbar import *
@@ -102,11 +103,12 @@ def get_data(path):
 	data.sort(key=lambda g: (g.chrom, g.loc))
 	return data
 
-def cross_validate_nbins(vector, max_nbins):
+def cross_validate_nbins(vector):
 	def risk_func(hist, w, n):
 		hist = np.array(hist)
 		return np.sum(hist**2) / (n**2*w) - (2/(n*(n-1)*w)) * np.sum(hist*(hist-1))
 
+	max_nbins = MAX_NBINS
 	n = len(vector)
 	a,b = 0,1 # Lower and Upper bound for data
 	span = b-a
@@ -136,13 +138,29 @@ def my_histogram(data_v, nbins, density=False, a=0, b=1):
 	for index in index_v:
 		hist[index]+=1
 	if density:
-		result = np.empty(nbins, dtype=np.float128)
-		np.divide(hist*nbins, len(data), result)
+		result = np.empty(nbins, dtype=FLOAT_TYPE)
+		np.divide(hist*nbins, len(data_v)*(b-a), result)
 		return result
 	else:
 		return hist
 			
+def conditional_exp(data_v, th0, th1, density_v, nbins):
+	part1 = np.power(data_v, th1-1)/special.beta(th1,1)
+	part2 = density_v[get_bin(data_v, nbins)]
+	return th0*part1/(th0*part1+(1-th0)*part2)
 
+def run_EM(pvalue_func_v, density_non_v, nbins):
+	theta = np.array([0.01, 0.5], dtype=FLOAT_TYPE)
+	theta_trace = []
+	pbar = myProgressBar(MAX_ITER)
+	for _ in pbar(range(MAX_ITER)):
+		t1 = conditional_exp(pvalue_func_v, theta[0], theta[1], density_non_v, nbins)
+		new_theta = np.empty(2, dtype=FLOAT_TYPE)
+		new_theta[0] = np.mean(t1)
+		new_theta[1] = new_theta[0]/np.mean(t1*(-np.log(pvalue_func_v)))
+		theta = new_theta
+		theta_trace.append(new_theta)
+	return {'theta': theta, 'trace': theta_trace}
 
 
 
@@ -155,6 +173,8 @@ def my_histogram(data_v, nbins, density=False, a=0, b=1):
 CANYON_API="http://localhost:3000/genome"
 MAX_RETRY=3
 MAX_NBINS=100
+FLOAT_TYPE = np.float64
+MAX_ITER=5000
 #===============================================================================
 ######  INPUT HANDLING
 #===============================================================================
@@ -186,8 +206,8 @@ count1, count2 = len(pvalues), len(canyon_scores)
 if count1!=count2:
 	die("Pvalues and Annotation scores do not match: "
 		  "{0} pvalues and {1} scores".format(count1, count2))
-pvalue_v = np.array(pvalues, dtype=np.longdouble) #Pvalue vector
-canyon_v = np.array(canyon_scores, dtype=np.longdouble) #Canyon score vector
+pvalue_v = np.array(pvalues, dtype=FLOAT_TYPE) #Pvalue vector
+canyon_v = np.array(canyon_scores, dtype=FLOAT_TYPE) #Canyon score vector
 print("Will perform Prioritization on {0} values".format(count1))
 thd = args.t # Threshold for functional/non-functional divide
 print("Will use {0} as threshold.".format(thd))
@@ -201,10 +221,24 @@ pvalue_non_v = pvalue_v[canyon_v <= thd] # Non-functional Pvalues
 ### Cross-Validation
 if nbins==None:
 	print("Cross Validation...")
-	nbins = cross_validate_nbins(pvalue_non_v, MAX_NBINS)
+	nbins = cross_validate_nbins(pvalue_non_v)
 	print("Will use {0} bins for optimal result".format(nbins))
 else:
 	print("Will use {0} bins as specified".format(nbins))
+density_non_v = my_histogram(pvalue_non_v, nbins, density=True)
+
+### EM
+print("Running EM algorithm...")
+result_EM = run_EM(pvalue_func_v, density_non_v, nbins)
+[th0, th1] = result_EM['theta']
+print(th0, th1)
+### Posterior Calculation
+# print("Calculating final result...")
+# part1 = np.power(pvalue_v, (th1-1))/special.beta(th1, 1)
+# part2 = density_non_v[get_bin(pvalue_v, nbins)]
+# prior = th0*canyon_v
+# posterior = prior*part1/(prior*part1 + (1-prior)*part2)
+
 
 exit(0)
 
