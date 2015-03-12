@@ -102,6 +102,49 @@ def get_data(path):
 	data.sort(key=lambda g: (g.chrom, g.loc))
 	return data
 
+def cross_validate_nbins(vector, max_nbins):
+	def risk_func(hist, w, n):
+		hist = np.array(hist)
+		return np.sum(hist**2) / (n**2*w) - (2/(n*(n-1)*w)) * np.sum(hist*(hist-1))
+
+	n = len(vector)
+	a,b = 0,1 # Lower and Upper bound for data
+	span = b-a
+	risk = []
+	pbar = myProgressBar(max_nbins)
+	nbins_v = np.arange(max_nbins+1)[1:]
+
+	for candidate in pbar(nbins_v):
+		bins = np.linspace(a,b,candidate+1)
+		hist = my_histogram(vector, nbins=candidate, density=False)
+		risk.append(risk_func(hist, span/candidate, n))
+
+	risk = np.array(risk)
+	# Taking the largest nbin with the minimal risk
+	result = nbins_v[risk==risk.min()][-1]
+	return result
+
+def get_bin(value_v, nbins, a=0, b=1):
+	index_v = np.empty_like(value_v, dtype=int)
+	np.ceil((value_v-a)/(b-a)*nbins, index_v)
+	index_v = index_v - 1
+	return index_v
+
+def my_histogram(data_v, nbins, density=False, a=0, b=1):
+	index_v = get_bin(data_v, nbins, a, b)
+	hist = np.zeros(nbins, dtype=int)
+	for index in index_v:
+		hist[index]+=1
+	if density:
+		result = np.empty(nbins, dtype=np.float128)
+		np.divide(hist*nbins, len(data), result)
+		return result
+	else:
+		return hist
+			
+
+
+
 
 
 ################################################################################
@@ -111,6 +154,7 @@ def get_data(path):
 #===============================================================================
 CANYON_API="http://localhost:3000/genome"
 MAX_RETRY=3
+MAX_NBINS=100
 #===============================================================================
 ######  INPUT HANDLING
 #===============================================================================
@@ -142,11 +186,25 @@ count1, count2 = len(pvalues), len(canyon_scores)
 if count1!=count2:
 	die("Pvalues and Annotation scores do not match: "
 		  "{0} pvalues and {1} scores".format(count1, count2))
-pvalue_v = np.array(pvalues, dtype=np.float64)
-canyon_v = np.array(canyon_scores, dtype=np.float64)
+pvalue_v = np.array(pvalues, dtype=np.longdouble) #Pvalue vector
+canyon_v = np.array(canyon_scores, dtype=np.longdouble) #Canyon score vector
+print("Will perform Prioritization on {0} values".format(count1))
+thd = args.t # Threshold for functional/non-functional divide
+print("Will use {0} as threshold.".format(thd))
+nbins = args.b
 #===============================================================================
 ###### COMPUTATION
 #===============================================================================
+pvalue_func_v = pvalue_v[canyon_v > thd] # Functional Pvalues
+pvalue_non_v = pvalue_v[canyon_v <= thd] # Non-functional Pvalues
+
+### Cross-Validation
+if nbins==None:
+	print("Cross Validation...")
+	nbins = cross_validate_nbins(pvalue_non_v, MAX_NBINS)
+	print("Will use {0} bins for optimal result".format(nbins))
+else:
+	print("Will use {0} bins as specified".format(nbins))
 
 exit(0)
 
