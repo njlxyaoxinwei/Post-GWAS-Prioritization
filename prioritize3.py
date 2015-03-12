@@ -1,5 +1,5 @@
-#prioritize [-b NBINS] [-t THRESHOLD] [-o DESTINATION] [-a ANNOTATION] GWAS_DATA 
-from __future__ import division
+# Python 3 version
+
 import argparse
 import sys
 import time
