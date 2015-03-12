@@ -1,7 +1,8 @@
-# prioritize [-b NBINS] [-t THRESHOLD] [-o DESTINATION] [-a ANNOTATION] GWAS_DATA 
-
+#prioritize [-b NBINS] [-t THRESHOLD] [-o DESTINATION] [-a ANNOTATION] GWAS_DATA 
+from __future__ import division
 import argparse
 import sys
+import time
 import requests
 import numpy as np
 from itertools import groupby
@@ -37,16 +38,33 @@ def myProgressBar(maxval):
 	widgets=[Percentage(), ' ', Bar()," ", AdaptiveETA(), ' ', Timer()]
 	return ProgressBar(widgets=widgets, maxval=maxval)
 
+def make_request(data, times):
+	try:
+		res = requests.post(CANYON_API, timeout=30*times, data=data)
+		res.raise_for_status()
+		return res.json()
+	except Exception as inst:
+		print(inst)
+		if times==MAX_RETRY:
+			print("{0} attempts failed, ".format(MAX_RETRY) + 
+				    "Please check Internet Connection")
+			die("Network Error")
+		else:
+			print("Attempting again in 5 seconds...")
+			time.sleep(5)
+			return make_request(data, times+1)
+
 def get_canyon(gwas_data):
 	canyon_data = []
 	pbar = myProgressBar(24)
 	pbar.update(0)
 	for chrom, group in groupby(gwas_data, key=lambda g: g.chrom):
-		locs = map(lambda g: (g.loc), group)
-		res = requests.post(CANYON_API, timeout=120,
-		                  	data={'chrom':chrom, 'locs[]': locs})
+		locs = list(map(lambda g: (g.loc), group))
+		# CANNOT use map here otherwise only the first attempt can go through,
+		# since the iterator will have finished the whole pass after that.
+		res = make_request({'chrom': chrom, 'locs[]': locs},1)
 		pbar.update(chrom)
-		canyon_data.extend(map(Decimal, res.json()))
+		canyon_data.extend(map(Decimal, res))
 	pbar.finish()
 	return canyon_data
 
@@ -89,12 +107,11 @@ def get_data(path):
 ################################################################################
 ####                              Main Program                              ####
 ################################################################################
-
 ######  CONSTANTS 
 #===============================================================================
 CANYON_API="http://localhost:3000/genome"
+MAX_RETRY=3
 #===============================================================================
-
 ######  INPUT HANDLING
 #===============================================================================
 ### Parsing Command Line Options
@@ -127,20 +144,9 @@ if count1!=count2:
 		  "{0} pvalues and {1} scores".format(count1, count2))
 pvalue_v = np.array(pvalues, dtype=np.float64)
 canyon_v = np.array(canyon_scores, dtype=np.float64)
-
+#===============================================================================
 ###### COMPUTATION
 #===============================================================================
-print(len(pvalue_v))
-print(len(canyon_v))
+
 exit(0)
-
-
-
-### Computation Starts Here with gwas_value and canyon_data
-print("Writing Result to File...")
-with open(args.o,'w') as output_file:
-	for data1, data2 in zip(gwas_value,canyon_data):
-		output_file.write("{0}\t{1}\n".format(data1,data2))
-
-
 
