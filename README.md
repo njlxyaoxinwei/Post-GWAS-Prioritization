@@ -10,7 +10,7 @@
 ### Python2 vs. Python3
 prioritize2.py is the python2 compatible version, and prioritize3.py is the python3 version. 
 
-### Usage:
+### Usage
 
 ```
 prioritize.py [-h] [-o DESTINATION_PATH] [-b NBINS] [-t THRESHOLD] [-a ANNOTATION_PATH] GWAS_DATA_PATH
@@ -18,7 +18,9 @@ prioritize.py [-h] [-o DESTINATION_PATH] [-b NBINS] [-t THRESHOLD] [-a ANNOTATIO
 
 See `prioritize.py -h` for more detail
 
-### DATA Format (for both GWAS_DATA and ANNOTATION):
+### DATA Format
+The following format is for both GWAS_DATA and ANNOTATION:
+
 A text file with n lines, each line contains chromosome number, coordinate and the GWAS p-value, separated by one tab (i.e. `'\t'`)
 
 ### Build
@@ -28,10 +30,9 @@ freeze.py is used for building executables. Please use [cx_Freeze](http://cx-fre
 
 2. Rename the correct python source code to prioritize.py
 
-3. Run (where `python` points to the preferred version of python)
-
+3. Run (where `python` points to the preferred version of python):
 ```
 python freeze.py build
 ```
 
-4. The executable will be named `prioritize` under the `build` directory.
+The executable will be named `prioritize` under the `build` directory.
