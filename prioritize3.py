@@ -222,14 +222,14 @@ def my_histogram(data_v, nbins, density=False, a=0, b=1):
     hist[index]+=1
   if density:
     result = np.empty(nbins, dtype=FLOAT_TYPE)
-    np.divide(hist*nbins, len(data_v)*(b-a), result)
+    np.true_divide(hist*nbins, len(data_v)*(b-a), result)
     return result
   else:
     return hist
       
 def conditional_exp(data_v, th0, th1, density_v, nbins):
   """Return the conditional expectation of the given parameters"""
-  part1 = np.power(data_v, th1-1)/special.beta(np.float64(th1),1)
+  part1 = np.power(data_v, th1-1)/special.beta(float(th1),1)
   part2 = density_v[get_bin(data_v, nbins)]
   return th0*part1/(th0*part1+(1-th0)*part2)
 
@@ -260,6 +260,7 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
     """
     if all(abs(theta - old_theta)<CONVERGE_THD):
       if theta[1]>=1 or theta[1]<=0 or theta[0]>0.5:
+        print()
         die("Weak signal in input data. Please try using -b1 flag")
       else:
         return True
@@ -268,8 +269,8 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
 
   theta = np.array([0.01, 0.5], dtype=FLOAT_TYPE)
   theta_trace = []
-  print("Iteration {0:8d}, differences are {1:>10G}, and {2:>10G}".format(0, 
-         0.01,0.5), end="", flush=True)
+  print("Iteration {0:8d}, differences are {1:>10G}"
+        " and {2:>10G}".format(0, 0.01, 0.5), end="", flush=True)
   for j in range(MAX_ITER):
     t1 = conditional_exp(pvalue_func_v, theta[0], theta[1], 
                          density_non_v, nbins)
@@ -279,16 +280,17 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
     old_theta = theta
     theta = new_theta
     theta_trace.append(new_theta)
-    print("\rIteration {0:8d}, differences are {1:>10G}, and {2:>10G}".format(j+1, 
-          *abs(theta-old_theta)), end="")
+    print("\rIteration {0:8d}, differences are {1:>10G}"
+          " and {2:>10G}".format(j+1, *abs(theta-old_theta)), 
+          end="", flush=True)
     if check_terminate(theta, old_theta):
       print("\nConverged after {0} iterations".format(j+1))
       return {'theta': theta, 'trace': theta_trace}
     else:
       theta = new_theta
       theta_trace.append(new_theta)
-  print("\nDifferences did not converge to {0:10G} after {1} iterations. ".format(
-         CONVERGE_THD, MAX_ITER))
+  print("\nDifferences did not converge to {0:10G} after "
+        "{1} iterations.".format(CONVERGE_THD, MAX_ITER))
   if prompt("Still compute the prioritization?"):
     return {'theta': theta, 'trace': theta_trace}
   else:
@@ -376,7 +378,7 @@ result_EM = run_EM(pvalue_func_v, density_non_v, nbins)
 
 ### Posterior Calculation
 print("Calculating final result...")
-part1 = np.power(pvalue_v, (th1-1))/special.beta(np.float64(th1), 1)
+part1 = np.power(pvalue_v, (th1-1))/special.beta(float(th1), 1)
 part2 = density_non_v[get_bin(pvalue_v, nbins)]
 prior = th0*canyon_v
 posterior = prior*part1/(prior*part1 + (1-prior)*part2)
