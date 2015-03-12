@@ -272,8 +272,7 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
   theta = np.array([0.01, 0.5], dtype=FLOAT_TYPE)
   theta_trace = []
   print("Iteration {0:8d}, differences are {1:>10G}"
-        " and {2:>10G}".format(0, 0.01, 0.5), end="")
-  sys.stdout.flush()
+        " and {2:>10G}".format(0, 0.01, 0.5), end="", file=sys.stderr)
   for j in range(MAX_ITER):
     t1 = conditional_exp(pvalue_func_v, theta[0], theta[1], 
                          density_non_v, nbins)
@@ -284,15 +283,17 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
     theta = new_theta
     theta_trace.append(new_theta)
     print("\rIteration {0:8d}, differences are {1:>10G}"
-          " and {2:>10G}".format(j+1, *abs(theta-old_theta)), end="")
-    sys.stdout.flush()
+          " and {2:>10G}".format(j+1, *abs(theta-old_theta)), 
+          end="", file=sys.stderr)
     if check_terminate(theta, old_theta):
-      print("\nConverged after {0} iterations".format(j+1))
+      print(file=sys.stderr)
+      print("Converged after {0} iterations".format(j+1))
       return {'theta': theta, 'trace': theta_trace}
     else:
       theta = new_theta
       theta_trace.append(new_theta)
-  print("\nTheta did not converge to within {0:10G} after "
+  print(file=sys.stderr)
+  print("Theta did not converge to within {0:10G} after "
         "{1} iterations.".format(CONVERGE_THD, MAX_ITER))
   if prompt("Still compute the prioritization?"):
     return {'theta': theta, 'trace': theta_trace}
