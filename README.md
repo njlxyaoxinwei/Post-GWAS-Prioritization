@@ -23,10 +23,15 @@ A text file with n lines, each line contains chromosome number, coordinate and t
 
 ### Build
 freeze.py is used for building executables. Please use [cx_Freeze](http://cx-freeze.sourceforge.net/) for the build:
+
 1. Make sure all dependencies are installed for the preferred python version with which you wish to run prioritize.
+
 2. Rename the correct python source code to prioritize.py
+
 3. Run (where `python` points to the preferred version of python)
+
 ```
 python freeze.py build
 ```
+
 4. The executable will be named `prioritize` under the `build` directory.
