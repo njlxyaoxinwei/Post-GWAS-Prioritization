@@ -8,7 +8,7 @@
 - [numpy](http://www.numpy.org/)
 
 ### Python2 vs. Python3
-prioritize2.py is the python2 compatible version, and prioritize3.py is the python3 version. 
+prioritize2.py is the python2 compatible version, and prioritize3.py is the python3 version. The latter version has slightly better precision (14 vs 18 digits after decimal point)
 
 ### Usage
 
