@@ -35,12 +35,12 @@ def prompt(query):
   Arguments:
   query: the string as hint text for the user
   """
-  sys.stdout.write('%s [y/n]: ' % query)
+  sys.stderr.write('%s [y/n]: ' % query)
   val = raw_input()
   try:
     ret = strtobool(val)
   except ValueError:
-    sys.stdout.write('Please answer with a y/n\n')
+    sys.stderr.write('Please answer with a y/n\n')
     return prompt(query)
   return ret
 
@@ -52,7 +52,7 @@ def line_count(path):
 
 def die(string):
   """Write error string to STDERR and exit with error"""
-  sys.stderr.write("Prioritize: " + string + '\n')
+  print("Prioritize: " + string, file=sys.stderr)
   exit(1)
 
 # need to check if coordinate is out-of-bounds
@@ -90,7 +90,7 @@ def make_request(data, times):
     res.raise_for_status()
     return res.json()
   except Exception as inst:
-    print(inst)
+    print(inst, file=sys.stderr)
     if times==MAX_RETRY:
       print("{0} attempts failed, ".format(MAX_RETRY) + 
             "Please check Internet Connection")
@@ -292,8 +292,8 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
     else:
       theta = new_theta
       theta_trace.append(new_theta)
-  print("\nTheta did not converge to within {0:10G} "
-        "after {1} iterations.".format(CONVERGE_THD, MAX_ITER))
+  print("\nTheta did not converge to within {0:10G} after "
+        "{1} iterations.".format(CONVERGE_THD, MAX_ITER))
   if prompt("Still compute the prioritization?"):
     return {'theta': theta, 'trace': theta_trace}
   else:
