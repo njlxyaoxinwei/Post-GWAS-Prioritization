@@ -11,7 +11,7 @@ base = None
 #     base = "Win32GUI"
 
 setup(  name = "Post-GWAS Prioritize",
-        version = "0.9",
+        version = "0.9.0",
         description = "Prioritize with Functional Annotation",
         options = {"build_exe": build_exe_options},
-        executables = [Executable("prioritize3.py", base=base)])
+        executables = [Executable("prioritize.py", base=base)] )
