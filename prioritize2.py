@@ -184,7 +184,6 @@ def cross_validate_nbins(vector):
   nbins_v = np.arange(max_nbins+1)[1:]
 
   for candidate in pbar(nbins_v):
-    bins = np.linspace(a,b,candidate+1)
     hist = my_histogram(vector, nbins=candidate, density=False)
     risk.append(risk_func(hist, span/candidate, n))
 
@@ -262,7 +261,7 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
     """
     if all(abs(theta - old_theta)<CONVERGE_THD):
       if theta[1]>=1 or theta[1]<=0 or theta[0]>0.5:
-        print()
+        print(file=sys.stderr)
         die("Weak signal in input data. Please try using -b1 flag")
       else:
         return True
