@@ -116,7 +116,6 @@ def get_canyon(gwas_data):
     # since the iterator will have finished the whole pass after that.
     res = make_request({'chrom': chrom, 'locs[]': locs},1)
     pbar.update(chrom)
-    print(chrom, len(res), len(locs))
     canyon_data.extend(map(Decimal, res))
   pbar.finish()
   return canyon_data

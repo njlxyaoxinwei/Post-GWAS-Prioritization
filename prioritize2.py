@@ -157,6 +157,13 @@ def get_data(path):
 
   The sorting is first by chromosome number then by position(loc)
   """
+
+  def remove_dup(data):
+    """Removes duplicated entries from data"""
+    seen = set()
+    seen_add = seen.add
+    return [x for x in data if not (x.loc in seen or seen_add(x.loc))]
+
   nlines = line_count(path)
   pbar = myProgressBar(nlines)
   data = []
@@ -164,7 +171,7 @@ def get_data(path):
     for line in pbar(f):
       data.append(Genome(*parse_line(line)))
   data.sort(key=lambda g: (g.chrom, g.loc))
-  return data
+  return remove_dup(data)
 
 def cross_validate_nbins(vector):
   """Performs cross-validation for given vector and returns the optimal nbins.
