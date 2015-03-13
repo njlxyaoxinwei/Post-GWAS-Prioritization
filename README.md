@@ -23,6 +23,8 @@ The following format is for both GWAS_DATA and ANNOTATION:
 
 A text file with n lines, each line contains chromosome number, coordinate and the GWAS p-value, separated by one tab (i.e. `'\t'`)
 
+Note: the data given is assumed to contain no duplicated entries. If it does, then the duplicated entries will be ignored during computation and removed from output.
+
 ### Build
 freeze.py is used for building executables. Please use [cx_Freeze](http://cx-freeze.sourceforge.net/) for the build:
 
