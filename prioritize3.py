@@ -22,6 +22,9 @@ class Genome:
   def __str__(self):
     """Stringify the three attributes: chromosome number, position and value."""
     return "{0}:{1}:{2}".format(self.chrom, self.loc, self.value)
+  def coordinate(self):
+    """Return coordinate"""
+    return (self.chrom, self.loc)
 
 def prompt(query):
   """Returns True or False depending on user's input
@@ -160,7 +163,8 @@ def get_data(path):
     """Removes duplicated entries from data"""
     seen = set()
     seen_add = seen.add
-    return [x for x in data if not (x.loc in seen or seen_add(x.loc))]
+    return [x for x in data if not (x.coordinate() in seen 
+                                    or seen_add(x.coordinate()))]
 
   nlines = line_count(path)
   pbar = myProgressBar(nlines)
@@ -168,7 +172,7 @@ def get_data(path):
   with open(path,'r') as f:
     for line in pbar(f):
       data.append(Genome(*parse_line(line)))
-  data.sort(key=lambda g: (g.chrom, g.loc))
+  data.sort(key=lambda g: g.coordinate())
   return remove_dup(data)
 
 def cross_validate_nbins(vector):
