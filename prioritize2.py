@@ -64,7 +64,7 @@ def validate(chrom, loc):
   Returns true if the pair exists on humans, false otherwise
   """
   if chrom in range(1,25):
-    return True
+    return 1<=loc<=GENOME_BOUNDS[chrom-1]
   else:
     return False
 
@@ -164,8 +164,8 @@ def get_data(path):
     """Removes duplicated entries from data"""
     seen = set()
     seen_add = seen.add
-    return [x for x in data if not (x.coordinate() in seen 
-                                    or seen_add(x.coordinate()))]
+    return [x for x in data if not (x.coordinate() in seen or
+                                    seen_add(x.coordinate()))]
 
   nlines = line_count(path)
   pbar = myProgressBar(nlines)
@@ -328,6 +328,11 @@ FLOAT_TYPE = np.float64
 ### For EM
 MAX_ITER=20000 
 CONVERGE_THD = FLOAT_TYPE(1e-10)
+### For validation
+GENOME_BOUNDS = [249250621, 243199373, 198022430, 191154276, 180915260, 
+171115067, 159138663, 146364022, 141213431, 135534747, 135006516, 133851895, 
+115169878, 107349540, 102531392, 90354753, 81195210, 78077248, 59128983, 
+63025520, 48129895, 51304566, 155270560, 59373566]
 #===============================================================================
 ######  INPUT HANDLING
 #===============================================================================
