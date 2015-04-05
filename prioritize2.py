@@ -55,7 +55,7 @@ def line_count(path):
 def die(string):
   """Write error string to STDERR and exit with error"""
   print("Prioritize: " + string, file=sys.stderr)
-  exit(1)
+  sys.exit(1)
 
 # need to check if coordinate is out-of-bounds
 def validate(chrom, loc):
