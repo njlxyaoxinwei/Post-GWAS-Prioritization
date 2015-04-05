@@ -16,6 +16,7 @@ prioritize2.py is the python2 compatible version, and prioritize3.py is the pyth
 prioritize.py [-h] [-o DESTINATION_PATH] [-b NBINS] [-t THRESHOLD] [-a ANNOTATION_PATH] GWAS_DATA_PATH
 ```
 
+When ANNOTATION_PATH is not specified, prioritize tries to download data from GenoCanyon, and save to file "temp.data" in the current directory.
 See `prioritize.py -h` for more detail
 
 ### DATA Format
