@@ -3,4 +3,4 @@ build/*
 build*/*
 *.sh
 bin/*
-dist.zip
+*.zip
