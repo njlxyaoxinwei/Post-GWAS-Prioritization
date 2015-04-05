@@ -2,7 +2,7 @@ import sys
 from cx_Freeze import setup, Executable
 
 # Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {"includes": ["scipy.special._ufuncs_cxx"]}
+build_exe_options = {"includes":  ["scipy.special._ufuncs_cxx", "scipy.linalg"]}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
@@ -11,7 +11,7 @@ base = None
 #     base = "Win32GUI"
 
 setup(  name = "Post-GWAS Prioritize",
-        version = "0.9.0",
+        version = "1.0.0",
         description = "Prioritize with Functional Annotation",
         options = {"build_exe": build_exe_options},
         executables = [Executable("prioritize.py", base=base)] )
