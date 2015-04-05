@@ -317,9 +317,9 @@ def run_EM(pvalue_func_v, density_non_v, nbins):
 ######  CONSTANTS 
 #===============================================================================
 ### For HTTP requests
-CANYON_API="http://localhost:3000/genome"
+CANYON_API="http://genocanyon.med.yale.edu/api/genome"
 MAX_RETRY=3 
-TIME_OUT=100 
+TIME_OUT=180
 ### For cross-validation
 MAX_NBINS=100
 ### For computation precision
