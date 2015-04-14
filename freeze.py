@@ -11,7 +11,7 @@ base = None
 #     base = "Win32GUI"
 
 setup(  name = "GenoWAP: Post-GWAS Prioritize",
-        version = "1.0.0",
+        version = "1.0.1",
         description = "Prioritize with Functional Annotation",
         options = {"build_exe": build_exe_options},
         executables = [Executable("GenoWAP.py", base=base)] )
