@@ -1,13 +1,13 @@
-Post-GWAS Prioritization User Manual
+GenoWAP: Post-GWAS Prioritization User Manual
 
 NAME
-	prioritize -- prioritize GWAS results through Integrated Analysis of Functional Annotation 
+	GenoWAP -- prioritize GWAS results through Integrated Analysis of Functional Annotation 
 
 SYNOPSIS
-	prioritize.py [-h] [-o DESTINATION_PATH] [-b NBINS] [-t THRESHOLD] [-a ANNOTATION_PATH] GWAS_DATA_PATH
+	GenoWAP [-h] [-o DESTINATION_PATH] [-b NBINS] [-t THRESHOLD] [-a ANNOTATION_PATH] GWAS_DATA_PATH
 
 DESCRIPTION
-	prioritize uses GWAS results as input, calculating the probability of a locus being related to the disease given its p-value in GWAS and functional score. The functional score is a measure of functionality of a locus. User could upload customized functional score or by default use posterior score returned by GenoCanyon. 
+	GenoWAP uses GWAS results as input, calculating the probability of a locus being related to the disease given its p-value in GWAS and functional score. The functional score is a measure of functionality of a locus. User could upload customized functional score or by default use posterior score returned by GenoCanyon. 
 
 
 	positional arguments:

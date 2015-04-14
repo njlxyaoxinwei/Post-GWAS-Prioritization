@@ -10,8 +10,8 @@ base = None
 # if sys.platform == "win32":
 #     base = "Win32GUI"
 
-setup(  name = "Post-GWAS Prioritize",
+setup(  name = "GenoWAP: Post-GWAS Prioritize",
         version = "1.0.0",
         description = "Prioritize with Functional Annotation",
         options = {"build_exe": build_exe_options},
-        executables = [Executable("prioritize.py", base=base)] )
+        executables = [Executable("GenoWAP.py", base=base)] )
