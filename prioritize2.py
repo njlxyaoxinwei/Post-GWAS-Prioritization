@@ -398,6 +398,7 @@ density_non_v = my_histogram(pvalue_non_v, nbins, density=True)
 print("Running EM algorithm...")
 result_EM = run_EM(pvalue_func_v, density_non_v, nbins)
 [th0, th1] = result_EM['theta']
+print("EM result: theta0={0:G}, theta1={1:G}".format(th0, th1))
 
 ### Posterior Calculation
 print("Calculating final result...")
