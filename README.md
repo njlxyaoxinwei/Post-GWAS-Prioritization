@@ -1,4 +1,4 @@
-## GenoWAP
+## GenoWAP (Deprecated! See [here](https://github.com/rlpowles/GenoWAP-V1.2) for the newest version)
 
 Post-GWAS Prioritization through Integrated Analysis of Functional Annotation
 
